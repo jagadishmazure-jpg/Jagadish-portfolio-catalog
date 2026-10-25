@@ -31,3 +31,19 @@
 | llm-capacity-planning | Cross-industry | Planning study, no industry |
 | inference-optimization | Cross-industry | "energy" there means compute cost |
 | telecom-incident-agents | Cross-industry | Telecom is not one of the ten domains |
+
+## Agent cards (`catalog/agents.json`)
+
+Any repo can publish single-agent cards in a file named `catalog/agents.json` with `"schema": "agent-card/v1"` and an `agents` list. `catalog/agents.py` turns each entry into a card:
+
+| Card field | From |
+|---|---|
+| Title, description | `title`, `summary` (both required, with `name`) |
+| Badge | `tech`: LangGraph/LangChain, Playwright, Azure or Agent Framework when named, otherwise Python |
+| Level | `level` if it is Beginner, Intermediate or Advanced, otherwise Beginner |
+| Industry | `industry` mapped to one of the ten domains by keyword (for example "Financial services" → banking, "Travel" → logistics), else Cross-industry |
+| Tags | the card's own industry text, the badge, the first two `tags` |
+| Result line | `task_score` on `task_cases`, labelled synthetic |
+| Link | `page`, only if it points inside the publishing repo; otherwise the repo itself |
+
+A file that is missing, not JSON or on another schema is ignored, and so is any entry without the required fields. Cards appear on the home page under **Enterprise use-case agents**, on `agents.html` (with a level filter) and on the matching industry pages.

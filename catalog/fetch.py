@@ -16,6 +16,7 @@ from pathlib import Path
 
 OWNER = os.environ.get("CATALOG_OWNER", "jagadishmazure-jpg")
 SKIP = {OWNER, "Jagadish-portfolio-coordination", "Jagadish-portfolio-catalog"}
+AGENTS_FILE = "catalog/agents.json"
 DOC_NAMES = ("docs/architecture.md", "docs/how-it-works.md", "docs/how-to-run.md")
 
 

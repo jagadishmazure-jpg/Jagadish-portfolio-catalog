@@ -11,6 +11,7 @@ from pathlib import Path
 
 import markdown
 
+from . import agents as A
 from . import classify as C
 from . import extract as X
 
@@ -122,6 +123,7 @@ def page(title: str, body: str, depth: int = 0, active: str = "") -> str:
     up = "../" * depth
     nav = [
         ("index.html", "Catalog"),
+        ("agents.html", "Agents"),
         ("industries/index.html", "Industries"),
         ("capabilities.html", "Capabilities"),
         ("delivery.html", "How we deliver"),
@@ -154,15 +156,58 @@ def card(it: dict, up: str = "") -> str:
     )
 
 
+def agent_card(a: dict) -> str:
+    pills = "".join(f'<span class="pill">{esc(t)}</span>' for t in a["tags"])
+    res = f'<div class="meta">{esc(a["result"])}</div>' if a["result"] else '<div class="meta">no task score published</div>'
+    text = " ".join([a["name"], a["title"], a["description"], a["tech"], " ".join(a["tags"]), "agent"]).lower()
+    return (
+        f'<a class="card agent" href="{esc(a["url"])}" data-ind="{" ".join(a["industries"])}" data-skill="agents" data-lvl="{a["level"]}" '
+        f'data-fw="{esc(a["framework"])}" data-text="{esc(text)}">'
+        f'<div class="row"><span class="badge fw-{fwclass(a["framework"])}">{esc(a["framework"])}</span>'
+        f'<span class="lvl lvl-{a["level"].lower()}">{a["level"]}</span></div>'
+        f'<h3>{esc(a["title"])}</h3><p>{esc(a["description"])}</p>{res}<div class="pills">{pills}</div></a>'
+    )
+
+
+def agent_section(agents: list[dict], heading: str = "h2") -> str:
+    if not agents:
+        return ""
+    repos = sorted({a["repo"] for a in agents})
+    src = ", ".join(esc(r.removeprefix("Jagadish-")) for r in repos)
+    return (
+        f'<section id="enterprise-agents"><{heading}>Enterprise use-case agents</{heading}>'
+        f'<p class="note">{len(agents)} agents published as agent cards by {src}. Each card opens the agent\'s page in its repo. '
+        f"Scores are measured on synthetic cases.</p>"
+        f'<div class="grid">{"".join(agent_card(a) for a in agents)}</div></section>'
+    )
+
+
+def agents_page(agents: list[dict]) -> str:
+    fws = sorted({a["framework"] for a in agents})
+    inds = [(k, v) for k, v in C.INDUSTRY_LABELS.items() if any(k in a["industries"] for a in agents)]
+    levels = [(lv, lv) for lv in ("Beginner", "Intermediate", "Advanced")]
+    body = f"""<section class="hero"><h1>Enterprise use-case agents</h1>
+<p>Single-purpose business agents read from each repo's <code>catalog/agents.json</code> (agent-card/v1). Each card opens the agent's own page in its repo.</p>
+<p class="note">{esc(DISCLAIMER)}</p>
+<input id="q" type="search" placeholder="Search agents, for example contract, invoice or retrieval" aria-label="Search agents"></section>
+<section class="filters"><div><span class="flabel">Framework</span>{chips("fw", [(f, f) for f in fws])}</div>
+<div><span class="flabel">Industry</span>{chips("ind", inds)}</div><div><span class="flabel">Level</span>{chips("lvl", levels)}</div></section>
+<p id="count" class="count">{len(agents)} agents</p><section id="grid" class="grid"></section>
+{agent_section(agents) or "<p>No repo publishes agent cards yet.</p>"}
+<script src="assets/filter.js"></script>"""
+    return page("Enterprise use-case agents", body, 0, "Agents")
+
+
 def chips(group: str, values: list[tuple[str, str]]) -> str:
     c = f'<button class="chip on" data-group="{group}" data-val="">All</button>'
     return c + "".join(f'<button class="chip" data-group="{group}" data-val="{esc(v)}">{esc(lbl)}</button>' for v, lbl in values)
 
 
-def home(items: list[dict]) -> str:
+def home(items: list[dict], agents: list[dict] | None = None) -> str:
+    agents = agents or []
     total = sum(i["tests"] or 0 for i in items)
-    fws = sorted({i["framework"] for i in items})
-    inds = [(k, v) for k, v in C.INDUSTRY_LABELS.items() if any(k in i["industries"] for i in items)]
+    fws = sorted({i["framework"] for i in items + agents})
+    inds = [(k, v) for k, v in C.INDUSTRY_LABELS.items() if any(k in i["industries"] for i in items + agents)]
     body = f"""<section class="hero"><h1>Applied AI reference builds</h1>
 <p>{len(items)} working projects across {len(inds)} industries, each with its own tests ({total:,} in total) and an honest list of what is built and what is still planned.</p>
 <p class="note">{esc(DISCLAIMER)}</p>
@@ -170,8 +215,9 @@ def home(items: list[dict]) -> str:
 <section class="filters"><div><span class="flabel">Framework</span>{chips("fw", [(f, f) for f in fws])}</div>
 <div><span class="flabel">Industry</span>{chips("ind", inds)}</div>
 <div><span class="flabel">Skill</span>{chips("skill", list(C.SKILL_LABELS.items()))}</div></section>
-<p id="count" class="count">{len(items)} projects</p>
+<p id="count" class="count">{len(items)} projects{f", {len(agents)} agents" if agents else ""}</p>
 <section id="grid" class="grid">{"".join(card(i) for i in items)}</section>
+{agent_section(agents)}
 <script src="assets/filter.js"></script>"""
     return page("Catalog", body, 0, "Catalog")
 
@@ -219,8 +265,9 @@ def case_page(it: dict) -> str:
     return page(it["title"] + " case study", body, 1)
 
 
-def industry_page(d: str, items: list[dict]) -> str:
+def industry_page(d: str, items: list[dict], agents: list[dict] | None = None) -> str:
     mine = [i for i in items if d in i["industries"]]
+    my_agents = [a for a in (agents or []) if d in a["industries"]]
     probs = "".join(f"<li><b>{esc(i['title'])}</b>: {esc(i['description'])}</li>" for i in mine)
     res = "".join(
         f'<li><a href="../case-studies/{i["slug"]}.html">{esc(i["title"])}</a>: {md_to_html(i["results"][0], i["repo"])}</li>'
@@ -228,20 +275,24 @@ def industry_page(d: str, items: list[dict]) -> str:
         if i["results"]
     )
     grid = "".join(card(i, "../") for i in mine)
-    empty = "<p>No repo covers this domain yet. It is listed so the gap stays visible.</p>" if not mine else ""
+    empty = "<p>No repo covers this domain yet. It is listed so the gap stays visible.</p>" if not mine and not my_agents else ""
     body = f"""<p class="crumb"><a href="index.html">Industries</a> / {esc(C.INDUSTRY_LABELS[d])}</p><h1>{esc(C.INDUSTRY_LABELS[d])}</h1>
 <p class="note">{esc(DISCLAIMER)}</p>{empty}
 <section><h2>Business problems worked on</h2><ul>{probs}</ul></section>
 <section><h2>Measured results</h2><ul class="results">{res or "<li>None stated yet.</li>"}</ul><p class="note">{SYNTH}</p></section>
-<section><h2>Repos that show it</h2><div class="grid">{grid}</div></section>"""
+<section><h2>Repos that show it</h2><div class="grid">{grid}</div></section>
+{agent_section(my_agents)}"""
     return page(C.INDUSTRY_LABELS[d], body, 1, "Industries")
 
 
-def industries_index(items: list[dict]) -> str:
-    rows = "".join(
-        f'<a class="card" href="{d}.html"><h3>{esc(C.INDUSTRY_LABELS[d])}</h3><p>{sum(d in i["industries"] for i in items)} repos</p></a>'
-        for d in DOMAINS
-    )
+def industries_index(items: list[dict], agents: list[dict] | None = None) -> str:
+    agents = agents or []
+
+    def n(d):
+        r, a = sum(d in i["industries"] for i in items), sum(d in x["industries"] for x in agents)
+        return f"{r} repos" + (f", {a} agents" if a else "")
+
+    rows = "".join(f'<a class="card" href="{d}.html"><h3>{esc(C.INDUSTRY_LABELS[d])}</h3><p>{n(d)}</p></a>' for d in DOMAINS)
     return page(
         "Industries", f"<h1>Industry solutions</h1><p class='note'>{esc(DISCLAIMER)}</p><div class='grid'>{rows}</div>", 1, "Industries"
     )
@@ -290,24 +341,27 @@ def about(items: list[dict]) -> str:
 
 def build(snap: dict, out: Path, overrides: dict | None = None) -> list[dict]:
     items = model(snap, overrides)
+    agents = [a for r in snap["repos"] for a in A.parse(r)]
     if out.exists():
         shutil.rmtree(out)
     for sub in ("repos", "case-studies", "industries", "assets"):
         (out / sub).mkdir(parents=True)
     for f in ASSETS.iterdir():
         shutil.copy(f, out / "assets" / f.name)
-    (out / "index.html").write_text(home(items))
+    (out / "index.html").write_text(home(items, agents))
     (out / "capabilities.html").write_text(capabilities(items))
+    (out / "agents.html").write_text(agents_page(agents))
     (out / "delivery.html").write_text(delivery(items))
     (out / "about.html").write_text(about(items))
-    (out / "industries" / "index.html").write_text(industries_index(items))
+    (out / "industries" / "index.html").write_text(industries_index(items, agents))
     for d in DOMAINS:
-        (out / "industries" / f"{d}.html").write_text(industry_page(d, items))
+        (out / "industries" / f"{d}.html").write_text(industry_page(d, items, agents))
     for it in items:
         (out / "repos" / f"{it['slug']}.html").write_text(repo_page(it))
         (out / "case-studies" / f"{it['slug']}.html").write_text(case_page(it))
     summary = [{k: it[k] for k in ("name", "framework", "level", "tests", "industries", "skills")} for it in items]
     (out / "catalog.json").write_text(json.dumps(summary, indent=1))
+    (out / "agents.json").write_text(json.dumps(agents, indent=1))
     (out / ".nojekyll").write_text("")
     return items
 
