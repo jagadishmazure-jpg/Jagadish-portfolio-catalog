@@ -74,6 +74,7 @@ def fetch() -> dict:
                 "readme": _file(name, "README.md") or "",
                 "docs": {k: v for k, v in docs.items() if v},
                 "paths": paths,
+                "agents_json": _file(name, AGENTS_FILE) if AGENTS_FILE in paths else None,
             }
         )
         print(f"fetched {name}", file=sys.stderr)
