@@ -1,0 +1,8 @@
+{"owner": "example-owner", "profile_readme": "| [**Demo-small-lab**](https://x) | thing | 12 |\n",
+ "repos": [
+  {"name": "Demo-bank-fraud-agents", "description": "Fraud agents for a fictional lender", "topics": ["agents"], "url": "https://github.com/example-owner/Demo-bank-fraud-agents", "branch": "main",
+   "readme": "# Demo\n\nA multi-agent fraud desk for Northwind Lending, built offline on synthetic data.\n\n## Architecture\n\n```mermaid\ngraph LR; A-->B\n```\n\n## How to run\n\n```\npytest\n```\n\n## Results\n\n- Recall rose from 0.60 to 0.90 on 40 synthetic cases\n- 350 automated tests pass\n\n## Built vs planned\n\n| Item | Status |\n|---|---|\n| Agents | Built |\n\n## Guardrails\n\nHuman approval before any block. See [docs](docs/x.md) and ![b](docs/evidence_board.png)\n",
+   "docs": {}, "paths": ["docs/evidence_board.png", "src/a.py"]},
+  {"name": "Demo-small-lab", "description": "", "topics": [], "url": "https://github.com/example-owner/Demo-small-lab", "branch": "main",
+   "readme": "# Small\n\nA short study of one retrieval technique with a tiny gold set and no extras at all.\n", "docs": {}, "paths": []}
+ ]}
