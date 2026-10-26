@@ -31,6 +31,7 @@
 | llm-capacity-planning | Cross-industry | Planning study, no industry |
 | inference-optimization | Cross-industry | "energy" there means compute cost |
 | telecom-incident-agents | Cross-industry | Telecom is not one of the ten domains |
+| coding-assistant-governance | Security | "fleet" means developer machines, not vehicles |
 
 ## Agent cards (`catalog/agents.json`)
 
