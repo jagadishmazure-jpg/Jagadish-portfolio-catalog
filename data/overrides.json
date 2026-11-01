@@ -1,6 +1,7 @@
 {
  "_comment": "Manual fixes where the keyword rules mislabel a repo. Keys: industries, framework. Keep this list short and explain each entry in docs/how-it-works.md.",
  "Jagadish-coding-assistant-governance": {"industries": ["security"], "why": "'fleet' means developer machines, not vehicles; this is a security and governance repo"},
+ "Jagadish-continuous-security-program": {"industries": ["security", "banking"], "why": "'compliance' would tag it legal; it is a security program for a fictional payments and lending company"},
  "Jagadish-arc-ampe-compliance-automation": {"industries": ["security", "healthcare"], "why": "'compliance' would tag it legal; it is a security GRC repo for a state health exchange"},
  "Jagadish-media-ops-agents": {"industries": ["cross"], "why": "description lists the other domains it follows; media itself is not one of the ten"},
  "Jagadish-llm-capacity-planning": {"industries": ["cross"], "why": "planning study, not tied to an industry"},

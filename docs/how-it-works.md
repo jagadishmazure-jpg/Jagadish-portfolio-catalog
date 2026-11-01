@@ -33,6 +33,7 @@
 | telecom-incident-agents | Cross-industry | Telecom is not one of the ten domains |
 | coding-assistant-governance | Security | "fleet" means developer machines, not vehicles |
 | arc-ampe-compliance-automation | Security, Healthcare | "compliance" would tag it Legal; it is security GRC for a state health exchange |
+| continuous-security-program | Security, Banking | "compliance" would tag it Legal; it is a security program for a fictional payments and lending company |
 
 ## Agent cards (`catalog/agents.json`)
 
